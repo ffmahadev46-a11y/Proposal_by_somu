@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Question for You ❤️</title>
+    <style>
+        /* General Setup and Colors */
+        body {
+            background-color: #fce4ec;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Arial', sans-serif;
+            position: relative;
+        }
+
+        /* Proposal Box Styling */
+        .proposal-box {
+            background-color: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            z-index: 10;
+        }
+
+        /* Proposal Text Styling */
+        .proposal-text {
+            color: black;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 30px;
+        }
+
+        /* Buttons Styling */
+        .buttons-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            height: 50px;
+        }
+        .button {
+            background-color: white;
+            color: black;
+            border: 2px solid #ff69b4;
+            padding: 10px 30px;
+            font-size: 18px;
+            cursor: pointer;
+            border-radius: 8px;
+            z-index: 20;
+        }
+        #no-button-teleport {
+            transition: all 0.05s ease;
+            position: absolute;
+        }
+
+        /* Flying Hearts (Same as before) */
+        .heart-emitter {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 2;
+        }
+        .flying-emoji {
+            position: absolute;
+            font-size: 30px;
+            color: var(--color);
+            bottom: -50px;
+            animation: fly-up var(--duration) linear infinite;
+            left: var(--left);
+        }
+        @keyframes fly-up {
+            0% { opacity: 0; transform: translateY(0); }
+            10% { opacity: 1; }
+            80% { opacity: 1; }
+            100% { opacity: 0; transform: translateY(-100vh) scale(1.5); }
+        }
+
+        /* Response Messages */
+        .response-message { display: none; padding: 20px; border-radius: 10px; }
+        .success-message { color: #d81b60; background-color: #f8bbd0; font-size: 24px; }
+        .sad-message { color: #004d40; background-color: #b2dfdb; }
+    </style>
+</head>
+<body>
+
+    <div class="heart-emitter" id="heart-emitter"></div>
+
+    <div class="proposal-box" id="proposal-box">
+        <div class="proposal-text" id="proposal-text">
+            Will you be my forever? ❤️
+        </div>
+
+        <div class="buttons-container" id="buttons-container">
+            <button class="button" id="yes-button" onclick="handleYes()">YES! ✨</button>
+            <button class="button" id="no-button-initial" onclick="handleNo(1)">NO 💔</button>
+        </div>
+
+        <div class="response-message success-message" id="success-msg"></div>
+        <div class="response-message sad-message" id="sad-msg"></div>
+    </div>
+
+    <button class="button" id="no-button-teleport" onclick="handleNo(2)" style="display: none;">NO</button>
+
+    <script>
+        // Setup
+        let no_count = 0;
+        let emojiInterval;
+        const proposalTextElement = document.getElementById('proposal-text');
+        const yesButton = document.getElementById('yes-button');
+        const noButtonInitial = document.getElementById('no-button-initial');
+        const noButtonTeleport = document.getElementById('no-button-teleport');
+        const sadMsg = document.getElementById('sad-msg');
+        
+        // --- Emoji Logic (Flying Hearts/Sad Emojis) ---
+        const container = document.getElementById('heart-emitter');
+        const heartTypes = ['💕', '♥', '💖', '❤️'];
+        const sadEmojis = ['😭', '😥', '🥺', '💔'];
+        let currentEmojis = heartTypes;
+
+        function createFlyingEmoji() {
+            const emoji = document.createElement('span');
+            emoji.innerHTML = currentEmojis[Math.floor(Math.random() * currentEmojis.length)];
+            emoji.classList.add('flying-emoji');
+            
+            emoji.style.setProperty('--duration', (Math.random() * 6 + 6) + 's');
+            emoji.style.setProperty('--left', (Math.random() * 100) + 'vw');
+            let color = (currentEmojis === sadEmojis) ? '#000000' : (Math.random() > 0.5 ? '#ff69b4' : '#ff0000');
+            emoji.style.setProperty('--color', color);
+
+            container.appendChild(emoji);
+            setTimeout(() => { emoji.remove(); }, 12000);
+        }
+        
+        function startEmojiAnimation(emojis, duration = 200) {
+            clearInterval(emojiInterval);
+            currentEmojis = emojis;
+            emojiInterval = setInterval(createFlyingEmoji, duration);
+        }
+        startEmojiAnimation(heartTypes, 200);
+
+        function temporarilyChangeToSadEmoji() {
+            startEmojiAnimation(sadEmojis, 100);
+            setTimeout(() => {
+                startEmojiAnimation(heartTypes, 200);
+            }, 5000);
+        }
+
+        // --- Button Logic ---
+        function handleYes() {
+            proposalTextElement.style.display = 'none';
+            noButtonInitial.style.display = 'none';
+            yesButton.style.display = 'none';
+            noButtonTeleport.style.display = 'none';
+            sadMsg.style.display = 'none';
+
+            document.getElementById('success-msg').innerHTML = "I KNEW IT! I'm completely speechless! 😭 This is the start of our beautiful forever. You're my dream come true, and I promise to fill every day with love and happiness. You just made my entire universe brighter! Thank you, my love! I love you! ✨💖";
+            document.getElementById('success-msg').style.display = 'block';
+
+            noButtonTeleport.onmouseover = null;
+        }
+
+        function handleNo(stage) {
+            no_count = stage;
+            
+            temporarilyChangeToSadEmoji();
+
+            if (no_count === 1) {
+                proposalTextElement.innerHTML = "No? 🥺 That wasn't the answer I was hoping for. **Are you absolutely sure? 😔**";
+                noButtonInitial.innerHTML = "STILL NO 😫";
+                noButtonInitial.onclick = () => handleNo(2);
+                sadMsg.innerHTML = "I feel a little heartbroken. 💔";
+                sadMsg.style.display = 'block';
+
+            } else if (no_count === 2) {
+                proposalTextElement.innerHTML = "Please don't do this! 😭 I honestly believe we'd be amazing together. Just choose YES! 👇";
+                noButtonInitial.style.display = 'none';
+                noButtonTeleport.style.display = 'block';
+                noButtonTeleport.innerHTML = "NO";
+                noButtonTeleport.onclick = () => alert("It seems your only choice is YES! 😉");
+
+                noButtonTeleport.onmouseover = teleportNoButton; 
+                noButtonTeleport.addEventListener('touchmove', teleportNoButton);
+                noButtonTeleport.addEventListener('touchstart', handleNoTouchStart);
+
+                noButtonTeleport.style.position = 'fixed';
+                teleportNoButton(); 
+
+                sadMsg.innerHTML = "My heart is getting worried now. 😥";
+                sadMsg.style.display = 'block';
+            }
+        }
+
+        function teleportNoButton() {
+            const buttonWidth = noButtonTeleport.offsetWidth;
+            const buttonHeight = noButtonTeleport.offsetHeight;
+            const maxW = window.innerWidth - buttonWidth - 20;
+            const maxH = window.innerHeight - buttonHeight - 20;
+
+            const newX = Math.floor(Math.random() * maxW);
+            const newY = Math.random() * maxH;
+
+            noButtonTeleport.style.left = newX + 'px';
+            noButtonTeleport.style.top = newY + 'px';
+            noButtonTeleport.style.zIndex = '9999';
+        }
+
+        function handleNoTouchStart(e) {
+            if (no_count === 2) {
+                e.preventDefault();
+                teleportNoButton();
+            }
+        }
+        noButtonTeleport.addEventListener('touchstart', handleNoTouchStart);
+    </script>
+</body>
+</html>
